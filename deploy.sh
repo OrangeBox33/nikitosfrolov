@@ -2,7 +2,7 @@
 #
 # Деплой визитки nikitosfrolov.ru.
 #
-#   ./deploy.sh              залить site/ в /var/www/nikitosfrolov
+#   ./deploy.sh              собрать и залить dist/ в /var/www/nikitosfrolov
 #   ./deploy.sh --dry-run    показать, что бы залилось
 #
 # Конфиг nginx сайта живёт только на сервере: /etc/nginx/sites-available/nikitosfrolov.ru.
@@ -37,13 +37,16 @@ done
 
 RSYNC_OPTS=(-az --delete --human-readable --itemize-changes --exclude '.DS_Store')
 
+say "Собираю"
+(cd "$ROOT" && npm run build)
+
 if [ "$DRY_RUN" = "1" ]; then
 	say "Пробный прогон -> $REMOTE:$WEB_ROOT"
-	rsync "${RSYNC_OPTS[@]}" --dry-run "$ROOT/site/" "$REMOTE:$WEB_ROOT/"
+	rsync "${RSYNC_OPTS[@]}" --dry-run "$ROOT/dist/" "$REMOTE:$WEB_ROOT/"
 	exit 0
 fi
 
-say "Заливаю site/ на $REMOTE:$WEB_ROOT"
+say "Заливаю dist/ на $REMOTE:$WEB_ROOT"
 ssh "$REMOTE" "mkdir -p $WEB_ROOT"
-rsync "${RSYNC_OPTS[@]}" "$ROOT/site/" "$REMOTE:$WEB_ROOT/"
+rsync "${RSYNC_OPTS[@]}" "$ROOT/dist/" "$REMOTE:$WEB_ROOT/"
 ok "готово: https://nikitosfrolov.ru/"

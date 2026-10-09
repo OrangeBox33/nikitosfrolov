@@ -1,0 +1,266 @@
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.site {
+	--muted: color-mix(in srgb, var(--brown) 62%, var(--bg));
+	container-type: inline-size;
+	min-height: 100vh;
+	background: var(--bg);
+	color: var(--brown);
+	font: var(--fs)/1.55 var(--font);
+	-webkit-font-smoothing: antialiased;
+}
+.site a { color: inherit; }
+
+.wrap {
+	max-width: calc(var(--w) * var(--cols) + var(--gap) * (var(--cols) - 1) + 48px);
+	margin: 0 auto;
+	padding: 88px 24px 56px;
+}
+
+.head { text-align: var(--align); margin-bottom: 36px; }
+.head h1 {
+	margin: 0;
+	font: var(--hw) 2em/1.15 var(--hfont);
+	letter-spacing: -.015em;
+	text-transform: var(--tt);
+}
+.intro { margin: 44px 0 0; color: var(--muted); font: 1.05em/1.4 var(--ufont); }
+
+.void { height: var(--void); }
+/* Облако из 42 штук «42» вокруг «42?». Шире колонки сайта, центр — по центру страницы */
+.cloud {
+	--cloud-base: clamp(13px, 2.3cqi, 20px);
+	position: relative;
+	left: 50%;
+	width: min(100cqi - 32px, 900px);
+	height: 720px;
+	transform: translateX(-50%);
+	user-select: none;
+}
+.cloud span {
+	position: absolute;
+	line-height: 1;
+	white-space: nowrap;
+}
+.secret {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin: 0;
+	transform: translate(-50%, -50%);
+	font: var(--hw) 5em/1 var(--hfont);
+	color: var(--brown);
+	white-space: nowrap;
+}
+.texts-title {
+	margin: 0 0 36px;
+	text-align: var(--align);
+	font: 400 1.05em/1.4 var(--ufont);
+	color: var(--muted);
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+	gap: var(--gap);
+	align-items: start;
+}
+.span-open .block.open { grid-column: 1 / -1; }
+
+/* Блок */
+.block {
+	background: var(--card);
+	border: var(--bw) solid var(--line);
+	border-radius: var(--r);
+	box-shadow: var(--shadow);
+	transition: transform .2s, box-shadow .2s, border-color .2s, background-color .2s;
+}
+.hover .block:not(.open):hover {
+	transform: translateY(-2px);
+	border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.open-border .block.open { border-color: var(--accent); }
+.open-fill .block.open { background: color-mix(in srgb, var(--extra) 22%, var(--card)); }
+.open-bar .block.open { box-shadow: inset 3px 0 0 var(--accent), var(--shadow); }
+
+.block-head {
+	all: unset;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	padding: var(--pad);
+	cursor: pointer;
+	border-radius: var(--r);
+}
+.block-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.block-icon {
+	flex: none;
+	display: grid;
+	place-items: center;
+	min-width: calc(var(--isz) * 1.2);
+	height: calc(var(--isz) * 1.2);
+}
+.icon-emoji { font-size: var(--isz); line-height: 1; }
+.icon-number { font: 600 .8em/1 var(--ufont); font-variant-numeric: tabular-nums; color: var(--accent); }
+
+.block-title { flex: 1; min-width: 0; font: var(--hw) 1.06em/1.3 var(--hfont); text-transform: var(--tt); }
+
+/* Индикатор раскрытия: плюс превращается в крестик, шеврон переворачивается */
+.block-ind { position: relative; flex: none; width: 14px; height: 14px; color: var(--muted); transition: transform var(--speed) ease, color .2s; }
+.ind-plus::before, .ind-plus::after {
+	content: ''; position: absolute; left: 0; top: 6px; width: 14px; height: 2px; border-radius: 1px; background: currentColor;
+}
+.ind-plus::after { transform: rotate(90deg); }
+.open .ind-plus { transform: rotate(45deg); color: var(--accent); }
+.ind-chevron::before {
+	content: ''; position: absolute; left: 3px; top: 1px; width: 7px; height: 7px;
+	border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.open .ind-chevron { transform: rotate(180deg); color: var(--accent); }
+
+/* Раскрытие: grid-template-rows 0fr → 1fr анимирует высоту без замеров */
+.block-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--speed) ease; }
+.block.open .block-body { grid-template-rows: 1fr; }
+.block-body > div { overflow: hidden; min-height: 0; }
+.block-inner {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 0 var(--pad) var(--pad);
+	opacity: 0;
+	transition: opacity var(--speed) ease;
+}
+.block.open .block-inner { opacity: 1; }
+.block-inner > p { margin: 0 0 .7em; }
+
+/* Блок с картинкой: справа колонка во всю высоту.
+   Ширина колонки не анимируется, иначе текст слева плывёт: при открытии она сразу
+   финальная, при закрытии держится, пока блок не схлопнется, и потом обнуляется */
+.block.has-image {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 0px;
+	grid-template-rows: auto 1fr;
+	transition: grid-template-columns 0s var(--speed), transform .2s, box-shadow .2s, border-color .2s, background-color .2s;
+}
+.block.has-image.open {
+	grid-template-columns: minmax(0, 1fr) calc(min(var(--imgw), 40%) + var(--pad));
+	transition-delay: 0s;
+}
+.has-image .block-head { grid-area: 1 / 1; }
+.has-image .block-body { grid-area: 2 / 1; }
+
+/* Картинка в двух экземплярах. Невидимый .media-size раскрывается приёмом 0fr → 1fr,
+   как текст, и задаёт блоку высоту, если картинка выше текста. Видимый .media-view
+   прибит к краям колонки, поэтому едет ровно с краем блока, без отставания */
+.block-media {
+	grid-area: 1 / 2 / 3;
+	position: relative;
+	min-width: 0;
+	padding: var(--pad) var(--pad) var(--pad) 0;
+}
+.media-size {
+	display: grid;
+	grid-template-rows: 0fr;
+	visibility: hidden;
+	transition: grid-template-rows var(--speed) ease;
+}
+.block.open .media-size { grid-template-rows: 1fr; }
+.media-size > div { min-height: 0; overflow: hidden; }
+.media-size img { display: block; width: 100%; }
+.media-view {
+	position: absolute;
+	inset: var(--pad) var(--pad) var(--pad) 0;
+	overflow: hidden;
+	border-radius: calc(var(--r) * .7);
+	box-shadow: 0 4px 10px rgb(60 40 20 / .14), 0 14px 32px rgb(60 40 20 / .14);
+	opacity: 0;
+	transition: opacity var(--speed) ease;
+}
+.block.open .media-view { opacity: 1; }
+/* Картинка прижата низом к низу колонки: пока блок растёт, она выезжает сверху
+   ровно вместе с его нижним краем. Если колонка выше картинки, растягивается с обрезкой */
+.media-view img {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	min-height: 100%;
+	object-fit: cover;
+}
+
+.block-foot { margin-top: auto; padding-top: 16px; }
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	padding: .55em 1.1em;
+	border-radius: calc(var(--r) * .7);
+	font: 500 .8em/1.2 var(--ufont);
+	text-decoration: none;
+	transition: filter .15s, background-color .15s;
+}
+.btn-fill .btn { background: var(--accent); color: var(--card); }
+.btn-fill .btn:hover { filter: brightness(1.08); }
+.btn-outline .btn { border: 1.5px solid var(--accent); color: var(--accent); }
+.btn-outline .btn:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+/* Текст внутри раскрытого блока */
+.prose { max-width: 62ch; font-family: var(--pfont); line-height: 1.7; }
+.prose p { margin: 0 0 1em; }
+.prose > :last-child { margin-bottom: 0; }
+
+/* Тексты списком: без карточек, только разделители */
+.texts-list .texts { gap: 0; grid-template-columns: 1fr; }
+.texts-list .texts .block {
+	background: none;
+	border: 0;
+	border-bottom: 1px solid var(--line);
+	border-radius: 0;
+	box-shadow: none;
+	transform: none;
+}
+.texts-list .texts .block:first-child { border-top: 1px solid var(--line); }
+.texts-list .texts .block-head, .texts-list .texts .block-inner { padding-left: 4px; padding-right: 4px; }
+
+.foot {
+	display: flex;
+	gap: 20px;
+	justify-content: var(--align);
+	margin-top: 56px;
+	font: .8em/1 var(--ufont);
+}
+.foot a { color: var(--muted); text-decoration: none; }
+.foot a:hover { color: var(--accent); }
+
+/* Мобильная вёрстка */
+@container (max-width: 640px) {
+	.wrap { padding: 48px 16px 40px; }
+	.head { margin-bottom: 28px; }
+	.intro, .texts-title { font-size: .95em; }
+	.intro { margin-top: 32px; }
+	.texts-title { margin-bottom: 28px; }
+	.secret { font-size: 4em; }
+	.cloud { height: 640px; }
+	.head h1 { font-size: 1.7em; }
+	.grid { grid-template-columns: 1fr; }
+	/* Закрытые блоки одной высоты: всегда под две строки названия,
+	   однострочное встаёт по центру. 2.76em = 2 строки × 1.06em × 1.3 */
+	.block-head { gap: 12px; min-height: calc(var(--pad) * 2 + 2.76em); }
+
+	/* Кнопка справа — под большой палец правой руки */
+	.block-foot { display: flex; justify-content: flex-end; }
+
+	/* Картинка слева и только под заголовком: заголовок всегда на всю ширину */
+	.block.has-image { grid-template-columns: 0px minmax(0, 1fr); }
+	.block.has-image.open { grid-template-columns: calc(min(var(--imgw), 40%) + var(--pad)) minmax(0, 1fr); }
+	.has-image .block-head { grid-area: 1 / 1 / 2 / 3; }
+	.has-image .block-body { grid-area: 2 / 2; }
+	/* Нижний отступ — внутри раскрывающейся части, иначе закрытый блок выше остальных */
+	.block-media { grid-area: 2 / 1; padding: 0 0 0 var(--pad); }
+	.media-size img { padding-bottom: var(--pad); }
+	.media-view { inset: 0 0 var(--pad) var(--pad); }
+}
