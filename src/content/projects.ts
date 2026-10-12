@@ -30,7 +30,7 @@ export const projects: Project[] = [
       "У меня дома стоит квадрат. Рисуешь онлайн - изображение переводится на него. Пинг <1 сек",
     ],
     image: kvadratRisovalka,
-    link: { label: "Открыть", href: "https://kvadratnikitos.ru" },
+    link: { label: "Открыть", href: "https://kvadratnikitosa.ru" },
   },
   {
     id: "domofon",
