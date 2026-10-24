@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-REMOTE="${NIKITOSFROLOV_REMOTE:-root@193.124.203.221}"
+REMOTE="${NIKITOSFROLOV_REMOTE:-root@185.228.232.194}"
 WEB_ROOT="/var/www/nikitosfrolov"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
